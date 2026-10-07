@@ -14,7 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import pe.edu.upeu.domain.model.RoomType
 import pe.edu.upeu.presentation.components.BookingButton
 
@@ -37,8 +40,20 @@ fun RoomDetailContent(
         Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState())) {
             // Galería simulada (Placeholder grande)
             Box(modifier = Modifier.fillMaxWidth().height(250.dp).background(Color.DarkGray)) {
-                Text("Galería de Imágenes (Firebase)", color = Color.White, modifier = Modifier.align(
-                    Alignment.Center))
+                if (room.images.isNotEmpty()){
+                    KamelImage(
+                        resource = asyncPainterResource(room.images.first().url),
+                        contentDescription = room.images.first().altText,
+                        contentScale = ContentScale.Crop
+                    )
+                }else{
+                    Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray),
+                    contentAlignment = Alignment.Center
+                    ){
+                        Text("Imagen no disponible", color = Color.White)
+                    }
+                }
+
             }
 
             Column(modifier = Modifier.padding(20.dp)) {
@@ -53,10 +68,15 @@ fun RoomDetailContent(
 
                 // SECCIÓN DE AMENITIES (Simulando el backend)
                 Text("Servicios incluidos", style = MaterialTheme.typography.titleMedium)
-                Row(modifier = Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    AmenityIcon(Icons.Default.Check, "WiFi")
-                    AmenityIcon(Icons.Default.Check, "TV")
-                    AmenityIcon(Icons.Default.Check, "A/C")
+                Row(modifier = Modifier.padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (room.amenities.isNotEmpty()){
+                        room.amenities.forEach { amenity ->
+                            AmenityIcon(Icons.Default.Check,amenity.name)
+                        }
+                    }else{
+                        Text("No hay servicios disponibles", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
 
                 Spacer(Modifier.height(32.dp))
