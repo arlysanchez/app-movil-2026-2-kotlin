@@ -11,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.di.appModule
@@ -36,8 +37,8 @@ fun App() {
          modules(appModule)
     }){
         //OBTENCION DEL VIEWMODEL Y ESTADOS GLOBALES
-        val viewModel = koinViewModel<HomeViewModel>()
-        val state by viewModel.uiState.collectAsState()
+        val homeViewModel = koinViewModel<HomeViewModel>()
+        val state by homeViewModel.uiState.collectAsState()
 
         var currentScreen by remember { mutableStateOf<Screen>(Screen.Splash) }
         var showAuthDialog by remember { mutableStateOf(false) }
@@ -63,12 +64,14 @@ fun App() {
                         }
                     )
                     is Screen.Home -> HomeContent(
+                        viewModel = homeViewModel,
                         isLoggedIn = state.isLoggedIn,
                         onLoginClick = {
                             authMode = AuthMode.LOGIN
                             showAuthDialog = true
                         },
-                        onLogout = { viewModel.toggleLogin(false)},
+                        onLogout = {
+                            homeViewModel.toggleLogin(false)},
                         onEditProfile = {currentScreen = Screen.ProfileUpdate},
                         onReserveClick = { room -> currentScreen = Screen.RoomDetail(room) },
                         onCartClick ={currentScreen= Screen.Cart},
@@ -79,14 +82,14 @@ fun App() {
                         room = (currentScreen as Screen.RoomDetail).room,
                         onBack = {currentScreen = Screen.Home},
                         onAddToCart = {room ->
-                            viewModel.addToCart(room)
+                            homeViewModel.addToCart(room)
                             currentScreen = Screen.Home
                         }
                     )
                     is Screen.Cart -> CartContent(
                         cartItems = state.cartItems,
                         onBack = {currentScreen = Screen.Home},
-                        onRemoveItem = {room -> viewModel.removeFromCart(room)},
+                        onRemoveItem = {room -> homeViewModel.removeFromCart(room)},
                         onCheckout = {showBookingDialog = true}
                     )
 
@@ -112,7 +115,7 @@ fun App() {
                                 LoginDialogContent(
                                     onNavigateToRegister = {authMode= AuthMode.REGISTER},
                                     onLoginSuccess = {
-                                        viewModel.toggleLogin(true)
+                                        homeViewModel.toggleLogin(true)
                                         showAuthDialog =false
                                     }
                                 )

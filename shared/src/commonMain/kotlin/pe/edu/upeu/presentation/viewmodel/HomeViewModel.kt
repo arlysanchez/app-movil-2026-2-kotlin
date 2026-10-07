@@ -1,21 +1,28 @@
 package pe.edu.upeu.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import pe.edu.upeu.domain.model.RoomType
 import pe.edu.upeu.domain.repository.RoomRepository
+import pe.edu.upeu.domain.usecase.GetRoomTypesUseCase
 
 data class HomeUiState(
     val rooms: List<RoomType> = emptyList(),
     val cartItems: List<RoomType> = emptyList(),
     val isLoggedIn: Boolean = false,
-    val isLoading : Boolean = false
+    val isLoading : Boolean = false,
+    val errorMessage: String? = null,
+    val successMessage : String? = null
 
 )
-class HomeViewModel(private val repository: RoomRepository): ViewModel(){
+class HomeViewModel(
+    private val getRoomTypesUseCase: GetRoomTypesUseCase
+): ViewModel(){
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -23,9 +30,17 @@ class HomeViewModel(private val repository: RoomRepository): ViewModel(){
         loadRooms()
     }
 
-    private fun loadRooms(){
-        val rooms = repository.getRooms()
-        _uiState.update { it.copy(rooms = rooms) }
+     fun loadRooms(){
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val result = getRoomTypesUseCase()
+            result.onSuccess { rooms ->
+                _uiState.update { it.copy(rooms=rooms, isLoading = false) }
+            }.onFailure { e ->
+                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+            }
+        }
+
     }
 
     fun addToCart(room: RoomType){
@@ -39,6 +54,9 @@ class HomeViewModel(private val repository: RoomRepository): ViewModel(){
     }
     fun toggleLogin(status: Boolean){
         _uiState.update { it.copy(isLoggedIn = status) }
+    }
+    fun clearMessages() {
+        _uiState.update { it.copy(errorMessage = null, successMessage = null) }
     }
 
 }

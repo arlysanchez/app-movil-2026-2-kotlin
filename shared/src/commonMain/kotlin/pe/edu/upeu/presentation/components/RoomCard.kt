@@ -10,7 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import pe.edu.upeu.domain.model.RoomType
 
 @Composable
@@ -21,18 +24,33 @@ fun RoomCard(room: RoomType, onViewDetail: () -> Unit) {
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column {
-            // IMAGEN POR DEFECTO (Placeholder)
+            // IMAGEN DE LA HABITACIÓN
             Box(
-                modifier = Modifier.fillMaxWidth().height(150.dp).background(MaterialTheme.colorScheme.primaryContainer),
+                modifier = Modifier.fillMaxWidth().height(150.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.Home,
-                    contentDescription = null,
-                    modifier = Modifier.size(50.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text("Imagen no disponible", modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp), style = MaterialTheme.typography.labelSmall)
+                if (room.images.isNotEmpty()) {
+                    println("🖼️ URL IMAGEN: ${room.images.first().url}")
+                    KamelImage(
+                        resource = asyncPainterResource(room.images.first().url),
+                        contentDescription = room.images.first().altText,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Home,
+                            contentDescription = null,
+                            modifier = Modifier.size(50.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text("Imagen no disponible", modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp), style = MaterialTheme.typography.labelSmall)
+                    }
+                }
             }
 
             Column(modifier = Modifier.padding(12.dp)) {

@@ -20,8 +20,15 @@ class RoomRepositoryImpl(
             val response = client.get("$baseUrl/room-types"){
               contentType(ContentType.Application.Json)
             }
+            println("HTTP STATUS: ${response.status}")
+
             if (response.status.isSuccess()){
                 val roomTypes = response.body<List<RoomTypeDto>>()
+                println("Cantidad de habitaciones: ${roomTypes.size}")
+                println("Datos recibidos:")
+                println(roomTypes)
+
+                println("====================================")
                 Result.success(roomTypes.map{it.toDomain()})
             }else{
                 Result.failure(Exception("Failed to fetch rooms: ${response.status}"))

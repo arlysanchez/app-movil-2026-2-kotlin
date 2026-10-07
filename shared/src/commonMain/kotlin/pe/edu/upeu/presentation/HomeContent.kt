@@ -38,10 +38,12 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -50,15 +52,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import pe.edu.upeu.domain.model.RoomType
 import pe.edu.upeu.presentation.components.RoomCard
+import pe.edu.upeu.presentation.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
+    viewModel: HomeViewModel,
     isLoggedIn: Boolean,
     onLoginClick: () -> Unit,
     onLogout: () -> Unit,
@@ -68,10 +73,11 @@ fun HomeContent(
     cartSize: Int,
 ) {
     //controlar los estados del home
+    val uiState by viewModel.uiState.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val selectTab by remember { mutableStateOf(0) }
-
+   /*
     val dummyRooms = listOf(
         RoomType(1, "Habitación Simple", "Cama confortable, WiFi y vista a la ciudad.", 1, 80.0),
         RoomType(2,"Habitación Doble","Dos camas, balcón privado y aire acondicionado.",2, 120.0),
@@ -89,7 +95,7 @@ fun HomeContent(
             )
         }
     }
-
+    */
     //estructura del drawer (menu lateral
 
     ModalNavigationDrawer(
@@ -231,35 +237,51 @@ fun HomeContent(
                 }
             }
         ) { padding ->
-            Column(
-                modifier =
-                    Modifier.padding(padding).fillMaxSize().padding(16.dp)
-            ) {
-                if (selectTab == 0) {
-                    LazyColumn(modifier = Modifier.fillMaxSize())
-                    {
-                        item {
-                            Text(
-                                "Habitaciones disponibles",
-                                style = MaterialTheme.typography.headlineSmall
-                            )
-                            Spacer(Modifier.height(16.dp))
-                        }
-                        items(dummyRooms) { room ->
-                            RoomCard(
-                                room = room,
-                                onViewDetail = { onReserveClick(room) }
-
-                            )
-                        }
-                    }
-                }else{
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center ){
-                        Text("historial de reservas")
-                    }
+            val snackbarHostState = remember { SnackbarHostState() }
+            LaunchedEffect(uiState.successMessage){
+                uiState.successMessage?.let { message->
+                    snackbarHostState.showSnackbar(message)
+                    viewModel.clearMessages()
                 }
-
             }
+                Column(modifier =Modifier.padding(padding)
+                    .fillMaxSize().padding(16.dp)
+                ) {
+                    if (selectTab == 0) {
+                        PullToRefreshBox(
+                            isRefreshing = uiState.isLoading,
+                            onRefresh = {viewModel.loadRooms()}
+                        ){
+                         val error = uiState.errorMessage
+                           if (uiState.rooms.isEmpty() && error !=null){
+                               Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                                   Text(error, color = MaterialTheme.colorScheme.error)
+                               }
+                           }else{
+                               LazyColumn(modifier = Modifier.fillMaxSize())
+                               {
+                                   item {
+                                       Text("Habitaciones disponibles",
+                                           style = MaterialTheme.typography.headlineSmall)
+                                       Spacer(Modifier.height(16.dp))
+                                   }
+                                   items(uiState.rooms) { room ->
+                                       RoomCard(room = room,
+                                           onViewDetail = { onReserveClick(room) }
+
+                                       )
+                                   }
+                               }
+                           }
+                        }
+
+                    }else{
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center ){
+                            Text("historial de reservas")
+                        }
+                    }
+
+                }
 
 
         }

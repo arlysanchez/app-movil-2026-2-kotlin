@@ -74,12 +74,11 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose) // Para el launcher de cámara
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.ktor.client.android)
+
         }
 
-        // androidMain: Código que solo corre en Android (ej. integraciones específicas)
-        androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-        }
+
 
         // commonTest: Para pruebas unitarias compartidas
         commonTest.dependencies {
