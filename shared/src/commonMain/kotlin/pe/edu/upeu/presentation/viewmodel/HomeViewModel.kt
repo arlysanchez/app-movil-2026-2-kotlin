@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pe.edu.upeu.data.local.SessionManager
 import pe.edu.upeu.domain.model.RoomType
+import pe.edu.upeu.domain.model.User
 import pe.edu.upeu.domain.repository.RoomRepository
 import pe.edu.upeu.domain.usecase.GetRoomTypesUseCase
 
@@ -15,22 +17,45 @@ data class HomeUiState(
     val rooms: List<RoomType> = emptyList(),
     val cartItems: List<RoomType> = emptyList(),
     val isLoggedIn: Boolean = false,
+    val currentUser: User? = null,
     val isLoading : Boolean = false,
     val errorMessage: String? = null,
     val successMessage : String? = null
 
 )
 class HomeViewModel(
-    private val getRoomTypesUseCase: GetRoomTypesUseCase
+    private val getRoomTypesUseCase: GetRoomTypesUseCase,
+    private val sessionManager: SessionManager
 ): ViewModel(){
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        loadSession()
         loadRooms()
     }
+    private fun loadSession(){
+        val user = sessionManager.getUser()
+        _uiState.update { it.copy(
+            isLoggedIn = sessionManager.isLoggedIn(),
+            currentUser = user
+        ) }
+    }
+    /*
+    load sin sesion en memoria
+    fun loadSession(user: User) {
+        _uiState.update {
+            it.copy(
+                currentUser = user,
+                isLoggedIn = true,
+                errorMessage = null,
+                successMessage = "Bienvenido, ${user.name}"
+            )
+        }
+    }
+*/
 
-     fun loadRooms(){
+        fun loadRooms(){
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = getRoomTypesUseCase()
@@ -53,10 +78,21 @@ class HomeViewModel(
         _uiState.update{it.copy(cartItems = emptyList())}
     }
     fun toggleLogin(status: Boolean){
-        _uiState.update { it.copy(isLoggedIn = status) }
+        if (!status){
+            sessionManager.clear()
+        }
+        _uiState.update { it.copy(
+            isLoggedIn = status,
+            currentUser = if (status) sessionManager.getUser() else null
+        )
+        }
     }
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, successMessage = null) }
     }
+    fun refreshUser(){
+        loadSession()
+    }
+
 
 }

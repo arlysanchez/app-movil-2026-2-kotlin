@@ -7,6 +7,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import pe.edu.upeu.data.local.SessionManager
 import pe.edu.upeu.data.remote.api.ApiClient
 import pe.edu.upeu.data.remote.dto.AuthResponse
 import pe.edu.upeu.data.remote.dto.LoginRequest
@@ -16,7 +17,9 @@ import pe.edu.upeu.domain.model.User
 import pe.edu.upeu.domain.repository.AuthRepository
 
 
-class AuthRepositoryImpl(private val client: HttpClient): AuthRepository {
+class AuthRepositoryImpl(private val client: HttpClient,
+    private val sessionManager: SessionManager
+): AuthRepository {
 
     private val baseUrl = ApiClient.getBaseUrl()
 

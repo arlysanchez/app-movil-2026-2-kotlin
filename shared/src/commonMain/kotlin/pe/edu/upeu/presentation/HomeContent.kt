@@ -54,7 +54,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import pe.edu.upeu.domain.model.RoomType
 import pe.edu.upeu.presentation.components.RoomCard
@@ -110,14 +113,26 @@ fun HomeContent(
                     if (isLoggedIn) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Box(contentAlignment = Alignment.BottomEnd) {
-                                //componente 1:icono perfil
-                                Icon(
-                                    imageVector = Icons.Default.AccountCircle,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(90.dp)
-                                        .clickable { onEditProfile() },
-                                    tint = Color.White
-                                )
+                                if (uiState.currentUser !=null && !uiState.currentUser!!.image.isNullOrBlank()){
+                                    KamelImage(
+                                        resource = asyncPainterResource(uiState.currentUser!!.image!!),
+                                        contentDescription = "Profile picture",
+                                        modifier = Modifier.size(90.dp)
+                                            .clip(CircleShape)
+                                            .clickable{onEditProfile()},
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }else{
+                                    //componente 1:icono perfil
+                                    Icon(
+                                        imageVector = Icons.Default.AccountCircle,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(90.dp)
+                                            .clickable { onEditProfile() },
+                                        tint = Color.White
+                                    )
+                                }
+
                                 //componente 2: lapiz de edicion
                                 Surface(
                                     shape = CircleShape,
@@ -134,11 +149,10 @@ fun HomeContent(
                                     }
                                 }
                             }
-                            Text(
-                                "Juan Perez", color = Color.White,
+                            Text(uiState.currentUser?.name ?:"Usuario", color = Color.White,
                                 style = MaterialTheme.typography.headlineSmall
                             )
-                            Text("admin@gmail.com", color = Color.White.copy(alpha = 0.7f))
+                            Text(uiState.currentUser?.email ?:"conectado@app.com", color = Color.White.copy(alpha = 0.7f))
                         }
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {

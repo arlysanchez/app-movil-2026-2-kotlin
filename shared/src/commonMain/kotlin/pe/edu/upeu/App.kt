@@ -27,6 +27,7 @@ import pe.edu.upeu.presentation.Screen
 import pe.edu.upeu.presentation.SplashContent
 import pe.edu.upeu.presentation.WelcomeContent
 import pe.edu.upeu.presentation.theme.AppTheme
+import pe.edu.upeu.presentation.viewmodel.AuthViewModel
 import pe.edu.upeu.presentation.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +39,7 @@ fun App() {
     }){
         //OBTENCION DEL VIEWMODEL Y ESTADOS GLOBALES
         val homeViewModel = koinViewModel<HomeViewModel>()
+        val authViewModel = koinViewModel<AuthViewModel>()
         val state by homeViewModel.uiState.collectAsState()
 
         var currentScreen by remember { mutableStateOf<Screen>(Screen.Splash) }
@@ -70,8 +72,7 @@ fun App() {
                             authMode = AuthMode.LOGIN
                             showAuthDialog = true
                         },
-                        onLogout = {
-                            homeViewModel.toggleLogin(false)},
+                        onLogout = { homeViewModel.toggleLogin(false)},
                         onEditProfile = {currentScreen = Screen.ProfileUpdate},
                         onReserveClick = { room -> currentScreen = Screen.RoomDetail(room) },
                         onCartClick ={currentScreen= Screen.Cart},
@@ -113,6 +114,7 @@ fun App() {
                         {
                             if (authMode == AuthMode.LOGIN){
                                 LoginDialogContent(
+                                    viewModel=authViewModel,
                                     onNavigateToRegister = {authMode= AuthMode.REGISTER},
                                     onLoginSuccess = {
                                         homeViewModel.toggleLogin(true)
@@ -121,6 +123,7 @@ fun App() {
                                 )
                             }else{
                                 RegisterDialogContent(
+                                    viewModel=authViewModel,
                                     onNavigationToLogin = {authMode = AuthMode.LOGIN},
                                     onRegisterSuccess = {authMode = AuthMode.LOGIN},
                                 )
