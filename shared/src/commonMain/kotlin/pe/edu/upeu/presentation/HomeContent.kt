@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -74,6 +75,8 @@ fun HomeContent(
     onEditProfile: () -> Unit,
     onCartClick: () -> Unit,
     cartSize: Int,
+    onSettingsClick: () -> Unit
+
 ) {
     //controlar los estados del home
     val uiState by viewModel.uiState.collectAsState()
@@ -187,6 +190,12 @@ fun HomeContent(
                         selected = false,
                         onClick = { scope.launch { drawerState.close() } },
                         icon = { Icon(Icons.Default.Person, null) }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Ajustes") },
+                        selected = false,
+                        onClick = { scope.launch { drawerState.close(); onSettingsClick() } },
+                        icon = { Icon(Icons.Default.Settings, null) }
                     )
                     NavigationDrawerItem(
                         label = { Text("Cerrar Sesion") },

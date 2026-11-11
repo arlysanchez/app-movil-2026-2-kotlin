@@ -12,4 +12,5 @@ sealed class Screen {
     object Cart: Screen()
 
     object ProfileUpdate: Screen()
+    object NotificationSetting: Screen()
 }

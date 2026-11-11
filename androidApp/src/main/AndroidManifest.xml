@@ -3,7 +3,8 @@
     <!--permisos para la camara y internet-->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
-
+    <!--permisos para laS notificaciones-->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-feature
             android:name="android.hardware.camera"
             android:required="false" />

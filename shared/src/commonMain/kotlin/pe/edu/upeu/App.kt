@@ -14,12 +14,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.dsl.module
+import pe.edu.upeu.data.notification.LocalNotificationPlatform
+import pe.edu.upeu.data.notification.UnsupportedLocalNotificationPlatform
 import pe.edu.upeu.di.appModule
 import pe.edu.upeu.domain.model.RoomType
 import pe.edu.upeu.presentation.BookingDialogContent
 import pe.edu.upeu.presentation.CartContent
 import pe.edu.upeu.presentation.HomeContent
 import pe.edu.upeu.presentation.LoginDialogContent
+import pe.edu.upeu.presentation.NotificationSettingsContent
 import pe.edu.upeu.presentation.ProfileUpdateContent
 import pe.edu.upeu.presentation.RegisterDialogContent
 import pe.edu.upeu.presentation.RoomDetailContent
@@ -29,17 +33,24 @@ import pe.edu.upeu.presentation.WelcomeContent
 import pe.edu.upeu.presentation.theme.AppTheme
 import pe.edu.upeu.presentation.viewmodel.AuthViewModel
 import pe.edu.upeu.presentation.viewmodel.HomeViewModel
+import pe.edu.upeu.presentation.viewmodel.NotificationSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App() {
+fun App(
+    notificationPlatform: LocalNotificationPlatform = UnsupportedLocalNotificationPlatform
+) {
+    val notificationModule = remember(notificationPlatform){
+        module { single<LocalNotificationPlatform>{notificationPlatform} }
+    }
 
     KoinApplication(application = {
-         modules(appModule)
+         modules(appModule,notificationModule)
     }){
         //OBTENCION DEL VIEWMODEL Y ESTADOS GLOBALES
         val homeViewModel = koinViewModel<HomeViewModel>()
         val authViewModel = koinViewModel<AuthViewModel>()
+        val notificationSettingsViewModel = koinViewModel<NotificationSettingsViewModel>()
         val state by homeViewModel.uiState.collectAsState()
 
         var currentScreen by remember { mutableStateOf<Screen>(Screen.Splash) }
@@ -77,6 +88,7 @@ fun App() {
                         onReserveClick = { room -> currentScreen = Screen.RoomDetail(room) },
                         onCartClick ={currentScreen= Screen.Cart},
                         cartSize = state.cartItems.size,
+                        onSettingsClick = {currentScreen= Screen.NotificationSetting}
 
                     )
                     is Screen.RoomDetail -> RoomDetailContent(
@@ -102,6 +114,10 @@ fun App() {
                         onSave = {
                                 bytes -> currentScreen = Screen.Home
                         }
+                    )
+                    is Screen.NotificationSetting -> NotificationSettingsContent(
+                        viewModel = notificationSettingsViewModel,
+                        onBack = {currentScreen= Screen.Home}
                     )
 
                 }
