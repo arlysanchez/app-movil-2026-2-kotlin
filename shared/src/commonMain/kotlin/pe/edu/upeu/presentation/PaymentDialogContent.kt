@@ -52,7 +52,7 @@ fun PaymentDialogContent (totalAmount: Double, onFinish :(method: String)-> Unit
             )
             Spacer(Modifier.height(32.dp))
 
-            BookingButton(text = "Finalizar y Pagar", onClick = { onFinish(selectedMethod) })
+            BookingButton(text = "Finalizar", onClick = { onFinish(selectedMethod) })
         }
     }
 }

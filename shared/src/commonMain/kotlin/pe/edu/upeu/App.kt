@@ -24,6 +24,7 @@ import pe.edu.upeu.presentation.CartContent
 import pe.edu.upeu.presentation.HomeContent
 import pe.edu.upeu.presentation.LoginDialogContent
 import pe.edu.upeu.presentation.NotificationSettingsContent
+import pe.edu.upeu.presentation.PaymentDialogContent
 import pe.edu.upeu.presentation.ProfileUpdateContent
 import pe.edu.upeu.presentation.RegisterDialogContent
 import pe.edu.upeu.presentation.RoomDetailContent
@@ -58,8 +59,12 @@ fun App(
         var authMode by remember { mutableStateOf(AuthMode.LOGIN) }
         var showBookingDialog by remember { mutableStateOf(false) }
         var showPaymentDialog by remember { mutableStateOf(false) }
-        var selectedRoomForBooking by remember { mutableStateOf<RoomType?>(null) }
         var totalToPay by remember { mutableStateOf(0.0) }
+        //estado para la reserva actual
+
+        var checkInDate by remember { mutableStateOf("") }
+        var checkOutDate by remember { mutableStateOf("") }
+        var guestsCount by remember { mutableStateOf(1) }
 
         AppTheme { //aplicamos el tema construido
 
@@ -155,6 +160,9 @@ fun App(
                             BookingDialogContent(
                                 cartItems = state.cartItems,
                                 onConfirm = { checkIn, checkOut, guests ->
+                                    checkInDate = checkIn
+                                    checkOutDate = checkOut
+                                    guestsCount = guests
                                     showBookingDialog = false
                                     totalToPay = state.cartItems.sumOf { it.price }
                                     showPaymentDialog = true
@@ -163,6 +171,27 @@ fun App(
                         }
                     }
                 }
+                if (showPaymentDialog){
+                    BasicAlertDialog(onDismissRequest = {showPaymentDialog = false}){
+                        Surface(shape = RoundedCornerShape(20.dp)) {
+                            PaymentDialogContent(
+                                totalAmount = totalToPay,
+                                onFinish = { method ->
+                                    showPaymentDialog = false
+                                    homeViewModel.createBooking(
+                                        checkIn = checkInDate,
+                                        checkOut = checkOutDate,
+                                        guests = guestsCount
+                                    )
+                                    homeViewModel.clearCart()
+                                    currentScreen = Screen.Home
+                                }
+                            )
+                        }
+                    }
+                }
+
+
 
 
             }

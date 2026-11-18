@@ -32,7 +32,7 @@ class BookingRepositoryImpl (private val client: HttpClient,
                 checkInDate = request.checkInDate,
                 checkOutDate = request.checkOutDate,
                 numberOfGuests = request.numberOfGuests,
-                roomRequests = request.roomRequest.map {
+                roomRequests = request.roomRequests.map {
                     RoomRequestDto(it.roomTypeId, it.numberOfRooms)
                 }
             )

@@ -11,6 +11,7 @@ import pe.edu.upeu.domain.repository.AuthRepository
 import pe.edu.upeu.domain.repository.BookingRepository
 import pe.edu.upeu.domain.repository.NotificationRepository
 import pe.edu.upeu.domain.repository.RoomRepository
+import pe.edu.upeu.domain.usecase.CreateBookingUseCase
 import pe.edu.upeu.domain.usecase.GetNotificationSettingsUseCase
 import pe.edu.upeu.domain.usecase.GetRoomTypesUseCase
 import pe.edu.upeu.domain.usecase.LoginUseCase
@@ -43,9 +44,10 @@ val appModule = module {
     factory { GetNotificationSettingsUseCase(get()) }
     factory { SetNotificationEnabledUseCase(get()) }
     factory { SendTestNotificationUseCase(get()) }
+    factory { CreateBookingUseCase(get()) }
 
     //viewModels
-    factory { HomeViewModel(get (),get()) }
+    factory { HomeViewModel(get (),get(),get()) }
     factory { AuthViewModel(get (),get(),get()) }
     factory { NotificationSettingsViewModel(get (),get(),get()) }
 
