@@ -8,9 +8,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pe.edu.upeu.data.local.SessionManager
+import pe.edu.upeu.domain.model.BookingRequest
+import pe.edu.upeu.domain.model.RoomRequest
 import pe.edu.upeu.domain.model.RoomType
 import pe.edu.upeu.domain.model.User
 import pe.edu.upeu.domain.repository.RoomRepository
+import pe.edu.upeu.domain.usecase.CreateBookingUseCase
 import pe.edu.upeu.domain.usecase.GetRoomTypesUseCase
 
 data class HomeUiState(
@@ -19,13 +22,15 @@ data class HomeUiState(
     val isLoggedIn: Boolean = false,
     val currentUser: User? = null,
     val isLoading : Boolean = false,
+    val isBooking : Boolean = false,
     val errorMessage: String? = null,
     val successMessage : String? = null
 
 )
 class HomeViewModel(
     private val getRoomTypesUseCase: GetRoomTypesUseCase,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val createBookingUseCase: CreateBookingUseCase
 ): ViewModel(){
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -66,6 +71,37 @@ class HomeViewModel(
             }
         }
 
+    }
+    fun createBooking(checkIn: String, checkOut: String,guests:Int){
+        viewModelScope.launch {
+            println("DEBUG : initiation process")
+            println("params In: $checkIn, Out: $checkOut, Guests: $guests")
+            _uiState.update { it.copy(isBooking = true) }
+            val requests = _uiState.value.cartItems
+                .groupBy { it.id }
+                .map { (id,room)-> RoomRequest(roomTypeId = id, numberOfRooms = room.size) }
+            println("DEBUG BOOKING RoomRequest to send: $requests")
+            val request = BookingRequest(
+                checkInDate = checkIn,
+                checkOutDate = checkOut,
+                numberOfGuests = guests,
+                roomRequests = requests
+            )
+            val result = createBookingUseCase(request)
+            if (result.isSuccess){
+                println("Server responded SUCCESS")
+                _uiState.update { it.copy(
+                    cartItems = emptyList(),
+                    isBooking = false,
+                    successMessage = "Reserva creada exitosamente!"
+                ) }
+            }else{
+                println("DEBUG_BOOKING Server FAILURE ${result.exceptionOrNull()?.message}")
+                _uiState.update { it.copy(
+                    isBooking = false, errorMessage = result.exceptionOrNull()?.message, successMessage = null
+                ) }
+            }
+        }
     }
 
     fun addToCart(room: RoomType){

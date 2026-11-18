@@ -4,9 +4,11 @@ import org.koin.dsl.module
 import pe.edu.upeu.data.local.SessionManager
 import pe.edu.upeu.data.remote.api.ApiClient
 import pe.edu.upeu.data.repository.AuthRepositoryImpl
+import pe.edu.upeu.data.repository.BookingRepositoryImpl
 import pe.edu.upeu.data.repository.NotificationRepositoryImpl
 import pe.edu.upeu.data.repository.RoomRepositoryImpl
 import pe.edu.upeu.domain.repository.AuthRepository
+import pe.edu.upeu.domain.repository.BookingRepository
 import pe.edu.upeu.domain.repository.NotificationRepository
 import pe.edu.upeu.domain.repository.RoomRepository
 import pe.edu.upeu.domain.usecase.GetNotificationSettingsUseCase
@@ -31,6 +33,8 @@ val appModule = module {
     single<RoomRepository> { RoomRepositoryImpl(get()) }
     single<AuthRepository>{ AuthRepositoryImpl(get(),get()) }
     single<NotificationRepository>{ NotificationRepositoryImpl(get(),get()) }
+    single<BookingRepository>{ BookingRepositoryImpl(get(),get()) }
+
 
     //useCase
     factory { GetRoomTypesUseCase(get()) }

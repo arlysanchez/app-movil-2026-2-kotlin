@@ -7,7 +7,7 @@ data class BookingRequest (
     val checkInDate : String,
     val checkOutDate: String,
     val numberOfGuests: Int,
-    val roomRequest: List<RoomRequest>
+    val roomRequests: List<RoomRequest>
 )
 @Serializable
 data class RoomRequest(
